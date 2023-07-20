@@ -8,14 +8,14 @@
     @foreach (var item in Model.Images)
     {
        <div class="pull-left col-md-4">            
-            <div>
-                <img class="thumbnailImage" src="@("https://localhost:7075/images/" + item.FileName)" />
+            <div class="d-flex justify-content-center">
+                <img class="thumbnailImage" style="border: 2px solid black; border-radius: 20px" src="@("https://localhost:7075/images/" + item.FileName)" />
             </div>
-            <div>
+                <div class="m-2 mb-4">
                 <div class="h6 topMarginSmall">@item.Title</div>
-                <div class="bottomMarginDefault">
-                    <a asp-action="EditImage" asp-controller="Gallery" asp-route-id="@item.Id">Edit title</a> |
-                    <a asp-action="DeleteImage" asp-controller="Gallery" asp-route-id="@item.Id">Delete image</a>
+                <div class="mb-2">
+                    <a class="btn btn-warning" asp-action="EditImage" asp-controller="Gallery" asp-route-id="@item.Id">Edit title</a> |
+                    <a class="btn btn-danger" asp-action="DeleteImage" asp-controller="Gallery" asp-route-id="@item.Id">Delete image</a>
                 </div>
             </div>
         </div>

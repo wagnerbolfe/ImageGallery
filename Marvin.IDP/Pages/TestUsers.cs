@@ -34,6 +34,7 @@ public class TestUsers
 
                     Claims = new List<Claim>
                     {
+                        new Claim("role", "FreeUser"),
                         new Claim(JwtClaimTypes.GivenName, "David"),
                         new Claim(JwtClaimTypes.FamilyName, "Flagg")
                     }
@@ -46,6 +47,7 @@ public class TestUsers
 
                     Claims = new List<Claim>
                     {
+                        new Claim("role", "PayingUser"),
                         new Claim(JwtClaimTypes.GivenName, "Emma"),
                         new Claim(JwtClaimTypes.FamilyName, "Flagg")
                     }
