@@ -48,6 +48,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpGet("{id}", Name = "GetImage")]
+        [Authorize("MustOwnImage")]
         public async Task<ActionResult<Image>> GetImage(Guid id)
         {
             var imageFromRepo = await _galleryRepository.GetImageAsync(id);
@@ -63,7 +64,9 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "PayingUser")]
+        //[Authorize(Roles = "PayingUser")]
+        [Authorize(Policy = "UserCanAddImage")]
+        [Authorize(Policy = "ClientAppCanWrite")]
         public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
         {
             // Automapper maps only the Title in our configuration
@@ -112,6 +115,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> DeleteImage(Guid id)
         {            
             var imageFromRepo = await _galleryRepository.GetImageAsync(id);
@@ -129,6 +133,7 @@ namespace ImageGallery.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize("MustOwnImage")]
         public async Task<IActionResult> UpdateImage(Guid id, 
             [FromBody] ImageForUpdate imageForUpdate)
         {
