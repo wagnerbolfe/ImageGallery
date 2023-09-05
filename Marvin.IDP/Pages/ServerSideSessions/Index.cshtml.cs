@@ -18,13 +18,7 @@ namespace Marvin.IDP.Pages.ServerSideSessions
         public QueryResult<UserSession> UserSessions { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string DisplayNameFilter { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string SessionIdFilter { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string SubjectIdFilter { get; set; }
+        public string Filter { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string Token { get; set; }
@@ -40,9 +34,9 @@ namespace Marvin.IDP.Pages.ServerSideSessions
                 {
                     ResultsToken = Token,
                     RequestPriorResults = Prev == "true",
-                    DisplayName = DisplayNameFilter,
-                    SessionId = SessionIdFilter,
-                    SubjectId = SubjectIdFilter
+                    DisplayName = Filter,
+                    SessionId = Filter,
+                    SubjectId = Filter,
                 });
             }
         }
@@ -55,7 +49,7 @@ namespace Marvin.IDP.Pages.ServerSideSessions
             await _sessionManagementService.RemoveSessionsAsync(new RemoveSessionsContext { 
                 SessionId = SessionId,
             });
-            return RedirectToPage("/ServerSideSessions/Index", new { Token, DisplayNameFilter, SessionIdFilter, SubjectIdFilter, Prev });
+            return RedirectToPage("/ServerSideSessions/Index", new { Token, Filter, Prev });
         }
     }
 }

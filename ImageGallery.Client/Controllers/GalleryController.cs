@@ -34,7 +34,7 @@ namespace ImageGallery.Client.Controllers
                 "/api/images/");
 
             var response = await httpClient.SendAsync(
-                request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                request, HttpCompletionOption.ResponseHeadersRead);
 
             response.EnsureSuccessStatusCode();
 
@@ -55,7 +55,7 @@ namespace ImageGallery.Client.Controllers
                 $"/api/images/{id}");
 
             var response = await httpClient.SendAsync(
-                request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                request, HttpCompletionOption.ResponseHeadersRead);
 
             response.EnsureSuccessStatusCode();
 
@@ -129,8 +129,8 @@ namespace ImageGallery.Client.Controllers
             return RedirectToAction("Index");
         }
 
-        //[Authorize(Roles = "PayingUser")]
         [Authorize(Policy = "UserCanAddImage")]
+        //[Authorize(Roles = "PayingUser")]
         public IActionResult AddImage()
         {
             return View();
@@ -138,8 +138,8 @@ namespace ImageGallery.Client.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = "PayingUser")]
         [Authorize(Policy = "UserCanAddImage")]
+        //[Authorize(Roles = "PayingUser")]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
         {
             if (!ModelState.IsValid)
@@ -180,7 +180,7 @@ namespace ImageGallery.Client.Controllers
             };
 
             var response = await httpClient.SendAsync(
-                request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                request, HttpCompletionOption.ResponseHeadersRead);
 
             response.EnsureSuccessStatusCode();
 
@@ -193,8 +193,13 @@ namespace ImageGallery.Client.Controllers
             var identityToken = await HttpContext
                 .GetTokenAsync(OpenIdConnectParameterNames.IdToken);
 
+            // get the saved access token
             var accessToken = await HttpContext
                 .GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            // get the refresh token
+            var refreshToken = await HttpContext
+                .GetTokenAsync(OpenIdConnectParameterNames.RefreshToken);
 
             var userClaimsStringBuilder = new StringBuilder();
             foreach (var claim in User.Claims)
@@ -206,7 +211,10 @@ namespace ImageGallery.Client.Controllers
             // log token & claims
             _logger.LogInformation($"Identity token & user claims: " +
                 $"\n{identityToken} \n{userClaimsStringBuilder}");
-            _logger.LogInformation($"Access Token: " + $"\n{accessToken}");
+            _logger.LogInformation($"Access token: " +
+                $"\n{accessToken}");
+            _logger.LogInformation($"Refresh token: " +
+                $"\n{refreshToken}");
         }
     }
 }

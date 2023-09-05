@@ -12,49 +12,36 @@ namespace Marvin.IDP;
 
 public class TestUsers
 {
-    public static List<TestUser> Users
-    {
-        get
+    public static List<TestUser> Users =>
+        new List<TestUser>
         {
-            var address = new
+            new TestUser
             {
-                street_address = "One Hacker Way",
-                locality = "Heidelberg",
-                postal_code = 69118,
-                country = "Germany"
-            };
-                
-            return new List<TestUser>
-            {
-                new TestUser
-                {
-                    SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7",
-                    Username = "David",
-                    Password = "password",
+                SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7",
+                Username = "David",
+                Password = "password",
 
-                    Claims = new List<Claim>
-                    {
-                        new Claim("role", "FreeUser"),
-                        new Claim(JwtClaimTypes.GivenName, "David"),
-                        new Claim(JwtClaimTypes.FamilyName, "Flagg"),
-                        new Claim("country", "br")
-                    }
-                },
-                new TestUser
+                Claims = new List<Claim>
                 {
-                    SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7",
-                    Username = "Emma",
-                    Password = "password",
-
-                    Claims = new List<Claim>
-                    {
-                        new Claim("role", "PayingUser"),
-                        new Claim(JwtClaimTypes.GivenName, "Emma"),
-                        new Claim(JwtClaimTypes.FamilyName, "Flagg"),
-                        new Claim("country", "be")
-                    }
+                    new Claim("role", "FreeUser"),
+                    new Claim(JwtClaimTypes.GivenName, "David"),
+                    new Claim(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim("country", "nl")
                 }
-            };
-        }
-    }
+            },
+            new TestUser
+            {
+                SubjectId = "b7539694-97e7-4dfe-84da-b4256e1ff5c7",
+                Username = "Emma",
+                Password = "password",
+
+                Claims = new List<Claim>
+                {
+                    new Claim("role", "PayingUser"),
+                    new Claim(JwtClaimTypes.GivenName, "Emma"),
+                    new Claim(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim("country", "be")
+                }
+            }
+        };
 }

@@ -12,14 +12,15 @@ namespace ImageGallery.API.Authorization
             IHttpContextAccessor httpContextAccessor)
         {
             _galleryRepository = galleryRepository ??
-                                 throw new ArgumentNullException(nameof(galleryRepository));
+                throw new ArgumentNullException(nameof(galleryRepository));
             _httpContextAccessor = httpContextAccessor ??
-                                   throw new ArgumentNullException(nameof(httpContextAccessor));
+                throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
 
+
         protected override async Task HandleRequirementAsync(
-            AuthorizationHandlerContext context,
+            AuthorizationHandlerContext context, 
             MustOwnImageRequirement requirement)
         {
             var imageId = _httpContextAccessor.HttpContext?
@@ -42,7 +43,7 @@ namespace ImageGallery.API.Authorization
             }
 
             if (!await _galleryRepository
-                    .IsImageOwnerAsync(imageIdAsGuid, ownerId))
+                .IsImageOwnerAsync(imageIdAsGuid, ownerId))
             {
                 context.Fail();
                 return;

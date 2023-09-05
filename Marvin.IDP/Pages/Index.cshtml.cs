@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Marvin.IDP.Pages.Home;
+namespace Marvin.IDP.Pages;
 
 [AllowAnonymous]
 public class Index : PageModel

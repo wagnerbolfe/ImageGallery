@@ -1,3 +1,8 @@
+using Marvin.IDP.DbContexts;
+using Marvin.IDP.Entities;
+using Marvin.IDP.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Marvin.IDP;
@@ -6,18 +11,29 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
+        // uncomment if you want to add a UI
         builder.Services.AddRazorPages();
+
+        builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<ILocalUserService, LocalUserService>();
+
+        builder.Services.AddDbContext<IdentityDbContext>(opt =>
+        {
+            opt.UseSqlite(
+                builder.Configuration
+                    .GetConnectionString("MarvinIdentityDBConnectionString"));
+        });
 
         builder.Services.AddIdentityServer(options =>
             {
                 // https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/api_scopes#authorization-based-on-scopes
                 options.EmitStaticAudienceClaim = true;
             })
+            .AddProfileService<LocalUserProfileService>()
             .AddInMemoryIdentityResources(Config.IdentityResources)
-            .AddInMemoryApiResources(Config.ApiResource)
             .AddInMemoryApiScopes(Config.ApiScopes)
-            .AddInMemoryClients(Config.Clients)
-            .AddTestUsers(TestUsers.Users);
+            .AddInMemoryApiResources(Config.ApiResources)
+            .AddInMemoryClients(Config.Clients);
 
         return builder.Build();
     }
@@ -31,11 +47,13 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
+        // uncomment if you want to add a UI
         app.UseStaticFiles();
         app.UseRouting();
 
         app.UseIdentityServer();
 
+        // uncomment if you want to add a UI
         app.UseAuthorization();
         app.MapRazorPages().RequireAuthorization();
 
