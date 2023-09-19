@@ -2,6 +2,7 @@
 using Marvin.IDP.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace Marvin.IDP.Services
@@ -15,10 +16,155 @@ namespace Marvin.IDP.Services
             IdentityDbContext context,
             IPasswordHasher<User> passwordHasher)
         {
-            _context = context ??
+            _context = context ?? 
                 throw new ArgumentNullException(nameof(context));
-            _passwordHasher = passwordHasher ??
+            _passwordHasher = passwordHasher ?? 
                 throw new ArgumentNullException(nameof(passwordHasher));
+        }
+
+        public async Task<User> FindUserByExternalProviderAsync(
+            string provider, string providerIdentityKey)
+        {
+            if (string.IsNullOrWhiteSpace(provider))
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (string.IsNullOrWhiteSpace(providerIdentityKey))
+            {
+                throw new ArgumentNullException(nameof(providerIdentityKey));
+            }
+
+            var userLogin = await _context.UserLogins.Include(ul => ul.User)
+               .FirstOrDefaultAsync(ul => ul.Provider == provider
+               && ul.ProviderIdentityKey == providerIdentityKey);
+
+            return userLogin?.User;
+        }
+
+        public User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims)
+        {
+            if (string.IsNullOrWhiteSpace(provider))
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (string.IsNullOrWhiteSpace(providerIdentityKey))
+            {
+                throw new ArgumentNullException(nameof(providerIdentityKey));
+            }
+
+            if (claims is null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
+
+            var user = new User()
+            {
+                Active = true,
+                Subject = Guid.NewGuid().ToString()
+            };
+            foreach (var claim in claims)
+            {
+                user.Claims.Add(new UserClaim()
+                {
+                    Type = claim.Type,
+                    Value = claim.Value
+                });
+            }
+            user.Logins.Add(new UserLogin()
+            {
+                Provider = provider,
+                ProviderIdentityKey = providerIdentityKey
+            });
+
+            _context.Users.Add(user);
+            return user;
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            if (email is null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+        public async Task AddExternalProviderToUser(
+           string subject,
+           string provider,
+           string providerIdentityKey)
+        {
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+
+            if (string.IsNullOrWhiteSpace(provider))
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (string.IsNullOrWhiteSpace(providerIdentityKey))
+            {
+                throw new ArgumentNullException(nameof(providerIdentityKey));
+            }
+
+            var user = await GetUserBySubjectAsync(subject);
+            user.Logins.Add(new UserLogin()
+            {
+                Provider = provider,
+                ProviderIdentityKey = providerIdentityKey
+            });
+        }
+
+        public async Task<bool> AddUserSecret(string subject, 
+            string name, string secret)
+        {
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (string.IsNullOrWhiteSpace(secret))
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+
+            var user = await GetUserBySubjectAsync(subject);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            user.Secrets.Add(new UserSecret() 
+                { Name = name, Secret = secret });
+            return true;
+        }
+
+        public async Task<UserSecret> GetUserSecretAsync(
+            string subject, string name)
+        {
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return await _context.UserSecrets
+                .FirstOrDefaultAsync(u => u.User.Subject == subject && u.Name == name);
         }
 
         public async Task<bool> IsUserActive(string subject)
@@ -61,7 +207,7 @@ namespace Marvin.IDP.Services
 
             // Validate credentials
             // return (user.Password == password);
-            var verificationResult =
+            var verificationResult = 
                 _passwordHasher.VerifyHashedPassword(
                     user, user.Password, password);
             return (verificationResult == PasswordVerificationResult.Success);
@@ -86,7 +232,7 @@ namespace Marvin.IDP.Services
                 throw new ArgumentNullException(nameof(subject));
             }
 
-            return await _context.UserClaims.Where(u =>
+            return await _context.UserClaims.Where(u => 
                 u.User.Subject == subject).ToListAsync();
         }
 
@@ -97,7 +243,7 @@ namespace Marvin.IDP.Services
                 throw new ArgumentNullException(nameof(subject));
             }
 
-            return await _context.Users.FirstOrDefaultAsync(u =>
+            return await _context.Users.FirstOrDefaultAsync(u => 
                 u.Subject == subject);
         }
 
@@ -125,7 +271,7 @@ namespace Marvin.IDP.Services
             userToAdd.SecurityCodeExpirationDate = DateTime.UtcNow.AddHours(1);
 
             // hash & salt the password
-            userToAdd.Password =
+            userToAdd.Password = 
                 _passwordHasher.HashPassword(userToAdd, password);
 
             _context.Users.Add(userToAdd);

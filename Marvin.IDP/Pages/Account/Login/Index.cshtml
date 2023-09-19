@@ -31,6 +31,11 @@
                                 <label asp-for="Input.Password"></label>
                                 <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="off">
                             </div>
+                              <div class="form-group">
+                                <label asp-for="Input.Totp"></label>
+                                <input class="form-control" placeholder="Totp" asp-for="Input.Totp" autocomplete="off">
+                            </div>
+
                             
                             @if (Model.View.AllowRememberLogin)
                             {
@@ -45,8 +50,8 @@
                             }
                             <div class="form-group">
                                 <a class="btn btn-secondary"
-                                   asp-page="/User/Registration/Index"
-                                   asp-route-returnUrl="@Model.Input.ReturnUrl">
+                               asp-page="/User/Registration/Index"
+                               asp-route-returnUrl="@Model.Input.ReturnUrl">
                                     Not registered yet?  Click here
                                 </a>
                             </div>
@@ -70,12 +75,24 @@
                             @foreach (var provider in Model.View.VisibleExternalProviders)
                             {
                                 <li class="list-inline-item">
-                                    <a class="btn btn-secondary"
-                                       asp-page="/ExternalLogin/Challenge"
-                                       asp-route-scheme="@provider.AuthenticationScheme"
-                                       asp-route-returnUrl="@Model.Input.ReturnUrl">
-                                        @provider.DisplayName
-                                    </a>
+                    @if (provider.AuthenticationScheme == "Windows")
+                        {
+                        <a class="btn btn-secondary"
+                            asp-page="/Windows/Index" 
+                            asp-route-returnUrl="@Model.Input.ReturnUrl">
+                            @provider.DisplayName
+                        </a> 
+                        }
+                    else
+                        { 
+                        <a class="btn btn-secondary"
+                            asp-page="/ExternalLogin/Challenge"
+                            asp-route-scheme="@provider.AuthenticationScheme"
+                            asp-route-returnUrl="@Model.Input.ReturnUrl">
+                            @provider.DisplayName
+                        </a>
+                        }
+
                                 </li>
                             }
                         </ul>

@@ -78,8 +78,8 @@ namespace Marvin.IDP.Pages.User.Registration
                 Value = Input.FamilyName
             });
 
-            _localUserService.AddUser(userToCreate, Input.Password);
-
+            _localUserService.AddUser(userToCreate, 
+                Input.Password);
             await _localUserService.SaveChangesAsync();
 
             // create an activation link - we need an absolute URL, therefore

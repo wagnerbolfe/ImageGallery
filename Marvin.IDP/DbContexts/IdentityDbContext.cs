@@ -7,7 +7,12 @@ namespace Marvin.IDP.DbContexts
     {
         public DbSet<User> Users { get; set; }
 
-        public DbSet<UserClaim> UserClaims { get; set; }         
+        public DbSet<UserClaim> UserClaims { get; set; }
+
+        public DbSet<UserLogin> UserLogins { get; set; }
+
+        public DbSet<UserSecret> UserSecrets { get; set; }
+
 
         public IdentityDbContext(
           DbContextOptions<IdentityDbContext> options)
@@ -31,7 +36,7 @@ namespace Marvin.IDP.DbContexts
                 new User()
                 {
                     Id = new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"),
-                    Password = "password",
+                    Password = "AQAAAAEAACcQAAAAEIi0HEeTvqcxwhA+dR/RKOEIfdGn1VIKy0P+AhKOp5vIdsb80zmPxqbhxllt5AmkKg==",
                     Subject = "d860efca-22d9-47fd-8249-791ba61b07c7",
                     UserName = "David",
                     Email = "david@someprovider.com",
@@ -40,7 +45,7 @@ namespace Marvin.IDP.DbContexts
                 new User()
                 {
                     Id = new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"),
-                    Password = "password",
+                    Password = "AQAAAAEAACcQAAAAEHgXILmaP4pu/Kz8M2cASmfD/XsHykcmTNyFTvQQiwyWaLWjWAlxBH1L5pQfSyRYqw==",
                     Subject = "b7539694-97e7-4dfe-84da-b4256e1ff5c7",
                     UserName = "Emma",
                     Email = "emma@someprovider.com",

@@ -38,7 +38,8 @@ public class Index : PageModel
         _schemeProvider = schemeProvider;
         _identityProviderStore = identityProviderStore;
         _events = events;
-        _localUserService = localUserService ?? throw new ArgumentNullException(nameof(localUserService));
+        _localUserService = localUserService 
+            ?? throw new ArgumentNullException(nameof(localUserService));
     }
 
     public async Task<IActionResult> OnGet(string returnUrl)
@@ -48,7 +49,8 @@ public class Index : PageModel
         if (View.IsExternalLoginOnly)
         {
             // we only have one option for logging in and it's an external provider
-            return RedirectToPage("/ExternalLogin/Challenge", new { scheme = View.ExternalLoginScheme, returnUrl });
+            return RedirectToPage("/ExternalLogin/Challenge", 
+                new { scheme = View.ExternalLoginScheme, returnUrl });
         }
 
         return Page();
@@ -57,7 +59,8 @@ public class Index : PageModel
     public async Task<IActionResult> OnPost()
     {
         // check if we are in the context of an authorization request
-        var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
+        var context = await _interaction.GetAuthorizationContextAsync(
+            Input.ReturnUrl);
 
         // the user clicked the "cancel" button
         if (Input.Button != "login")
@@ -89,9 +92,37 @@ public class Index : PageModel
         if (ModelState.IsValid)
         {
             // validate username/password against in-memory store
-            if (await _localUserService.ValidateCredentialsAsync(Input.Username, Input.Password))
+            if (await _localUserService.ValidateCredentialsAsync(
+                Input.Username, Input.Password))
             {
-                var user = await _localUserService.GetUserByUserNameAsync(Input.Username);
+                var user = await _localUserService
+                    .GetUserByUserNameAsync(Input.Username);
+
+                // validate the second factor 
+                // first, get the totp secret for this user 
+                var userSecret = await _localUserService
+                    .GetUserSecretAsync(user.Subject, "TOTP");
+                if (userSecret == null)
+                {
+                    ModelState.AddModelError("usersecret", 
+                        "No second factor secret has been registered - " +
+                        "please contact the helpdesk.");
+                    await BuildModelAsync(Input.ReturnUrl);
+                    return Page();
+                }
+
+                // validate the inputted totp 
+                var authenticator = new TwoStepsAuthenticator
+                    .TimeAuthenticator();
+                if (!authenticator.CheckCode(userSecret.Secret, 
+                    Input.Totp, user))
+                {
+                    ModelState.AddModelError("totp", "TOTP is invalid.");
+                    await BuildModelAsync(Input.ReturnUrl);
+                    return Page();
+                }
+
+
                 await _events.RaiseAsync(new UserLoginSuccessEvent(
                     user.UserName, user.Subject, user.UserName, 
                     clientId: context?.Client.ClientId));
@@ -161,12 +192,16 @@ public class Index : PageModel
             ReturnUrl = returnUrl
         };
             
-        var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
-        if (context?.IdP != null && await _schemeProvider.GetSchemeAsync(context.IdP) != null)
+        var context = await _interaction
+            .GetAuthorizationContextAsync(returnUrl);
+        if (context?.IdP != null && await _schemeProvider
+            .GetSchemeAsync(context.IdP) != null)
         {
-            var local = context.IdP == Duende.IdentityServer.IdentityServerConstants.LocalIdentityProvider;
+            var local = context.IdP == Duende.IdentityServer
+                .IdentityServerConstants.LocalIdentityProvider;
 
-            // this is meant to short circuit the UI and only trigger the one external IdP
+            // this is meant to short circuit the UI and only
+            // trigger the one external IdP
             View = new ViewModel
             {
                 EnableLocalLogin = local,
@@ -176,7 +211,8 @@ public class Index : PageModel
 
             if (!local)
             {
-                View.ExternalProviders = new[] { new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
+                View.ExternalProviders = new[] { 
+                    new ViewModel.ExternalProvider { AuthenticationScheme = context.IdP } };
             }
 
             return;
@@ -192,7 +228,8 @@ public class Index : PageModel
                 AuthenticationScheme = x.Name
             }).ToList();
 
-        var dyanmicSchemes = (await _identityProviderStore.GetAllSchemeNamesAsync())
+        var dyanmicSchemes = (await _identityProviderStore
+            .GetAllSchemeNamesAsync())
             .Where(x => x.Enabled)
             .Select(x => new ViewModel.ExternalProvider
             {
@@ -207,9 +244,12 @@ public class Index : PageModel
         if (client != null)
         {
             allowLocal = client.EnableLocalLogin;
-            if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
+            if (client.IdentityProviderRestrictions != null && 
+                client.IdentityProviderRestrictions.Any())
             {
-                providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
+                providers = providers.Where(provider => 
+                client.IdentityProviderRestrictions.Contains(
+                    provider.AuthenticationScheme)).ToList();
             }
         }
 
